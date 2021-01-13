@@ -2,8 +2,6 @@ const moment = require('moment');
 
 module.exports = (client, commandOptions) => {
 
-  const prefix = 'h!';
-
   let {
     name,
     aliases,
@@ -40,13 +38,15 @@ module.exports = (client, commandOptions) => {
     if(message.channel.type === "dm") return;
     const { member, content, guild } = message;
 
+    let prefix = client.guildData.get(message.guild.id).prefix || client.prefix;
+
     for (const alias of aliases) {
       if(content.toLowerCase().startsWith(`${prefix}${alias.toLowerCase()}`)) {
 
         // check if user has required permissions
         for(const permission of permissions) {
           if(!member.hasPermission(permission)) {
-            return message.channel.send("You do not have permission.");
+            return message.channel.send(client.language.generals.noPerm());
           }
         }
 
@@ -55,24 +55,29 @@ module.exports = (client, commandOptions) => {
           let role = guild.roles.cache.find(r => r.name == requiredRole);
 
           if(!role || !member.roles.cache.has(role.id)) {
-            return message.channel.send(`You must have the ${requiredRole} to use this command.`);
+            return message.channel.send(client.language.generals.noRole(role));
           }
         }
 
         // get arguments;
-        const args = content.split(/[ ]+/)
+        let args = content.split(/[ ]+/);
 
         // remove prefix
         args.shift();
 
+        // put together all the arguments in the message
         const argresult = args.join(" ");
+
+        // remove the command from the command arguments
+        args.shift();
+        
 
         // check number of arguments
         if(args.length < minArgs || maxArgs !== null && args.length > maxArgs) {
-          return message.channel.send(`Incorrect usage! Use ${prefix}${alias} ${expectedArgs}`);
+          return message.channel.send(client.language.generals.incorrectUsage(prefix, alias, expectedArgs));
         }
 
-        if(client.configFile.logging) {
+        if(client.config.logging) {
           let loggingOutput;
           loggingOutput = `[\x1b[36m${moment().format("LLLL")}\x1b[0m] Command ${prefix}${alias} was executed by \x1b[36m${member.user.tag}\x1b[0m (ID: \x1b[36m${member.id}\x1b[0m)`;
           console.log(loggingOutput);

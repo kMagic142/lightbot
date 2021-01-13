@@ -8,6 +8,6 @@ module.exports = {
     //permissions: [],
     //requiredRoles: []
     run: (message, args, text) => {
-        message.reply("Pong!");
+        message.reply(message.client.language.ping(message.client, message.author));
     }
 }
