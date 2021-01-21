@@ -1,3 +1,6 @@
+const { MessageEmbed } = require('discord.js');
+const Data = require('../data/Data.js');
+
 module.exports = {
     generals: {
         noPerm: (user, client) => {
@@ -22,6 +25,117 @@ module.exports = {
         },
         incorrectUsage: (client, user) => {
             return `Prefix entered wrongly. Try again and type the prefix like this: "yourPrefix"`;
+        }
+    },
+    joinLeave: {
+        joinMessage: (member, client) => {
+            return `Welcome, **<@${member.id}>**! Please enjoy your stay in **${member.guild.name}**`;
+        },
+        leaveMessage: (member, client) => {
+            return `**<@${member.id}>** has left the guild.`;
+        },
+        disabled: (message, client) => {
+            return `Welcome messages are disabled for this guild.`;
+        },
+        status: (status) => {
+            if(status) {
+                return `Welcome messages are now enabled for this guild.`;
+            } else {
+                return `Welcome messages are now disabled for this guild.`;
+            }
+        },
+        noChannelID: () => {
+            return `There is no channel id linked with this guild. Please proceed to run the command again without the \`enable\` at the end to begin setup.`;
+        },
+        setup: {
+            channelSetup: (client, message) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor("ORANGE")
+                .addField('Setting up guild join and guild leave messages...',
+            `To set everything up, you first need to have a channel in which I can announce when members join or leave the guild.
+            Please copy your desired channel's ID or NAME (with or without #) and paste it in here.
+            Make sure I have access to that channel before you proceed!`)
+                .setFooter("Type cancel if you'd like to dismiss this setup.");
+                return embed;
+            },
+            invalidChannel: (content, message, client) => {
+                return `The channel you entered is invalid, please try again.`;
+            },
+            timeError: () => {
+                return `Time expired. Please run the command again if you wish to continue.`;
+            },
+            canceled: () => {
+                return `Setup canceled. Run the command again if you wish to proceed with the setup.`;
+            },
+            success: (channel, message, client) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor("ORANGE")
+                .addField('Join / Leave announcements successfully enabled for this guild!',
+            `Join and Leave announcements have been enabled for this guild in <#${channel.id}>. If you wish to modify any
+            messages, please visit the coresponding language file or use the web dashboard.`);
+                return embed;
+            }
+        }
+    },
+    tickets: {
+        add: {
+            notTicketChannel: () => {
+                return `This is not a ticket channel. Please try again by executing this command in your open ticket channel.`;
+            },
+            incorrectUsage: () => {
+                return `Incorrect usage! You need to mention a guild member.`;
+            },
+            success: () => {
+                return `Member was successfully added to your ticket!`;
+            }
+        },
+        remove: {
+            notTicketChannel: () => {
+                return `This is not a ticket channel. Please try again by executing this command in your open ticket channel.`;
+            },
+            incorrectUsage: () => {
+                return `Incorrect usage! You need to mention a guild member.`;
+            },
+            success: () => {
+                return `Member was successfully removed from your ticket!`;
+            }
+        },
+        close: {
+            notTicketChannel: () => {
+                return `This is not a ticket channel. Please try again by executing this command in your open ticket channel.`;
+            },
+            success: () => {
+                return `🕐 | This ticket will be closing in 1 minute from now.`;
+            }
+        },
+        open: {
+            denyMulipleTickets: () => {
+                return `You already have a ticket! Please wait for your ticket to get concluded before creating another.`;
+            },
+            noCategory: () => {
+                return `The category ID isn't defined in your database. Please create a new category, copy it's ID and add it to the bot's configuration. Don't forget to add permissions for your desired support role to the category, as the channels inhert the category's permissions.`;
+            },
+            ticketOpened: (channel, client, user) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor("ORANGE")
+                .addField('Ticket informations', 
+                `Created by ${user.tag} (${user.id})
+                Time of creation: ${channel.createdAt}`)
+                .setFooter(`Please describe your problem as best as you can.`);
+
+                return embed;
+            }
+        }
+    },
+    help: {
+        description: () => {
+            return `Light is a feature-rich Discord BOT with many utilities, fun and moderation facilities, and perfect for any Discord server.
+            This bot was purchased from MC-Market, published by Light Development. Developed and put together by kMagic (ciprian.#6142).
+            For any issue with this resource, please contact us at the Light Development server (found in resource page).
+            Thank you for your purchase!`;
         }
     },
     LightStartup: () => {
@@ -57,4 +171,4 @@ module.exports = {
             [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;233m [38;5;235m.[38;5;236m.[38;5;236m.[38;5;235m.[38;5;233m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m 
             [0m`;
     }
-}
+};

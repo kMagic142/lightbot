@@ -1,13 +1,14 @@
 const fs = require('fs');
+const Data = require('../data/Data.js');
 
 module.exports = {
     name: 'onGuildLeave',
     enabled: true,
     run: async (client) => {
         client.on('guildDelete', async (guild) => {
-            if(client.guildData.has(guild.id)) {
-                await fs.unlinkSync(`./Storage/guilds/${guild.id}.json`)
+            if(Data.getGuild(guild.id)) {
+                Data.deleteGuild(guild.id);
             }
         });
     }
-}
+};

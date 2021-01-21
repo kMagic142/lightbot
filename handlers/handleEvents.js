@@ -11,6 +11,6 @@ module.exports = async (client, eventOptions) => {
     }
 
     return run(client);
-}
+};
 
 

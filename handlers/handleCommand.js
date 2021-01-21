@@ -1,8 +1,10 @@
 const moment = require('moment');
+const Data = require('../data/Data.js');
 
 module.exports = (client, commandOptions) => {
 
   let {
+    enabled,
     name,
     aliases,
     description,
@@ -14,6 +16,8 @@ module.exports = (client, commandOptions) => {
     run
   } = commandOptions;
 
+  if(!enabled) return;
+  
   // make sure aliases are always in an array
   if(typeof aliases === 'string') {
     aliases = [aliases];
@@ -36,9 +40,9 @@ module.exports = (client, commandOptions) => {
   client.on('message', async (message) => {
     if(message.author.bot) return;
     if(message.channel.type === "dm") return;
-    const { member, content, guild } = message;
+    var { member, content, guild } = message;
 
-    let prefix = client.guildData.get(message.guild.id).prefix || client.prefix;
+    let prefix = await Data.getPrefix(message.guild.id) || client.prefix;
 
     for (const alias of aliases) {
       if(content.toLowerCase().startsWith(`${prefix}${alias.toLowerCase()}`)) {
@@ -59,17 +63,17 @@ module.exports = (client, commandOptions) => {
           }
         }
 
+        content = content.replace(alias, "");
+
         // get arguments;
-        let args = content.split(/[ ]+/);
+        let args = content.split(" ");
 
         // remove prefix
+        args.shift();
         args.shift();
 
         // put together all the arguments in the message
         const argresult = args.join(" ");
-
-        // remove the command from the command arguments
-        args.shift();
         
 
         // check number of arguments
@@ -86,14 +90,14 @@ module.exports = (client, commandOptions) => {
         // handle the actual command
         return run(message, args, argresult);
 
-      };
+      }
     }
 
 
 
   });
 
-}
+};
 
 async function validatePermissions(permissions) {
   let validPermissions = [

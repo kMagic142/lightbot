@@ -1,4 +1,7 @@
+const Data = require("../../data/Data.js");
+
 module.exports = {
+    enabled: true,
     name: 'setprefix',
     aliases: 'setguildprefix',
     description: 'Sets the guild prefix',
@@ -6,8 +9,8 @@ module.exports = {
     minArgs: 1,
     maxArgs: null,
     permissions: ["MANAGE_GUILD"],
-    //requiredRoles: [],
-    run: (message, args, text) => {
+    requiredRoles: [],
+    run: async (message, args, text) => {
         var client = message.client;
         var user = message.author;
         let prefix;
@@ -16,7 +19,8 @@ module.exports = {
 
             // select the correct prefix from the match output
             prefix = prefix[1];
-        } catch(e) {
+        } catch(err) {
+            if(err) throw err;
             return message.channel.send(client.language.setPrefix.incorrectUsage(client, user));
         }
 
@@ -25,7 +29,7 @@ module.exports = {
             return message.channel.send(client.language.setPrefix.tooLong(client, user));
         }
 
-        client.registerPrefix(message.guild.id, prefix);
+        Data.setPrefix(message.guild.id, prefix);
         return message.channel.send(client.language.setPrefix.success(prefix, client, user));
     }
-}
+};

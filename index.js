@@ -1,15 +1,14 @@
 
 require('dotenv').config();
 const Discord = require('discord.js');
-const fs = require('fs');
-const { promisify } = require('util');
-const { resolve } = require('path');
+const { readdir } = require('fs').promises;
+const { resolve, parse, basename } = require('path');
 const handleEvents = require('./handlers/handleEvents.js');
 
 const client = new Discord.Client({fetchAllMembers: true});
 client.config = require("./Storage/config.json");
 const token = process.env.TOKEN;
-const logging = client.config.logging;
+let logging = client.config.logging;
 
 client.commands = [];
 client.events = [];
@@ -37,65 +36,41 @@ async function registerEvents() {
   for(const event of client.events) {
       handleEvents(client, event);
   }
-};
+}
 
 
 client.getFiles = async (dir) => {
-  const readdir = promisify(fs.readdir);
-  const stat = promisify(fs.stat);
-  const subdirs = await readdir(dir);
-  const files = await Promise.all(subdirs.map(async (subdir) => {
-      const res = resolve(dir, subdir);
-      return (await stat(res)).isDirectory() ? client.getFiles(res) : res;
+  const subdirs = await readdir(dir, { withFileTypes: true });
+  const files = await Promise.all(subdirs.map((subdir) => {
+      const res = resolve(dir, subdir.name);
+      return subdir.isDirectory() ? client.getFiles(res) : res;
   }));
-  return files.reduce((a, f) => a.concat(f), []);
-}
+  return Array.prototype.concat(...files);
+};
 
-client.registerPrefix = async (id, prefix) => {
-  let guild = client.guildData.get(id);
-
-  // check if prefix value already exists
-  if(!guild.prefix.length) {
-    // create add prefix key and value to json object
-    guild.push({
-      prefix: prefix
-    });
-
-    // turn object into a valid json file
-    var file = JSON.stringify(guild, null, 2);
-
-    // set the prefix into the guildData collection
-    client.guildData.set(id, guild);
-
-    // write the json file back to its coresponding file
-    fs.writeFileSync(`./Storage/guilds/${id}.json`, file, 'utf8', callback);
-  } else {
-    // set the value to the new prefix
-    guild.prefix = prefix;
-
-    // turn object into a valid json file
-    var file = JSON.stringify(guild, null, 2);
-
-    // set the prefix into the guildData collection
-    client.guildData.set(id, guild);
-
-    // write the json file back to its coresponding file
-    fs.writeFileSync(`./Storage/guilds/${id}.json`, file, 'utf8', callback);
-  }
-}
+client.getDirectories = async (dir) => {
+  const subdirs = await readdir(dir, { withFileTypes: true });
+  const files = await Promise.all(subdirs.map((subdir) => {
+      const res = resolve(dir, subdir.name);
+      return subdir.isDirectory() ? client.getDirectories(res) : parse(res).dir;
+  }));
+  return Array.from(new Set(files.flat()));
+};
 
 
 if (process.version.slice(1).split('.')[0] < 14) {
   console.log(new Error(`[Light] You must have Node.js v14 or higher installed on your PC.`));
   process.exit(1);
-};
+}
 
 if (logging !== true && logging !== false) {
   console.log(new TypeError(`[Light] The 'logging' value must be true or false. Logging is set to false by default.`));
   logging = false;
-};
+}
 
 
 client.login(token);
 
 registerEvents();
+
+module.exports.client = client;

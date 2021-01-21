@@ -1,8 +1,8 @@
 module.exports = {
     enabled: true,
-    name: 'ping',
-    aliases: ['pong', 'pingpong'],
-    description: 'Pong!',
+    name: 'exp leaderboard',
+    aliases: ['xp leaderboard'],
+    description: 'Display this server\'s top players in gathered exp.',
     minArgs: 0,
     maxArgs: null,
     permissions: [],

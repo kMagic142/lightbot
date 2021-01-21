@@ -1,10 +1,11 @@
 module.exports = {
     enabled: true,
-    name: 'ping',
-    aliases: ['pong', 'pingpong'],
-    description: 'Pong!',
+    name: 'exp info',
+    aliases: ['xp info', 'xp'],
+    description: 'Display informations about user\'s gathered exp.',
+    expectedArgs: '<[@Member]>',
     minArgs: 0,
-    maxArgs: null,
+    maxArgs: 1,
     permissions: [],
     requiredRoles: [],
     run: (message, args, text) => {
