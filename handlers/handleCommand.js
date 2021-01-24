@@ -1,7 +1,7 @@
 const moment = require('moment');
 const Data = require('../data/Data.js');
 
-module.exports = (client, commandOptions) => {
+module.exports = async (client, commandOptions) => {
 
   let {
     enabled,
@@ -36,8 +36,8 @@ module.exports = (client, commandOptions) => {
 
     validatePermissions(permissions);
   }
-  
-  client.on('message', async (message) => {
+
+  client.on('message', async message => {
     if(message.author.bot) return;
     if(message.channel.type === "dm") return;
     var { member, content, guild } = message;
@@ -74,7 +74,7 @@ module.exports = (client, commandOptions) => {
 
         // put together all the arguments in the message
         const argresult = args.join(" ");
-        
+          
 
         // check number of arguments
         if(args.length < minArgs || maxArgs !== null && args.length > maxArgs) {
@@ -92,9 +92,6 @@ module.exports = (client, commandOptions) => {
 
       }
     }
-
-
-
   });
 
 };

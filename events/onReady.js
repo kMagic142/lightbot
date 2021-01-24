@@ -1,6 +1,7 @@
 const fs = require('fs');
 const Data = require('../data/Data.js');
-const registerCommand = require('../handlers/handleCommand.js');
+const handleExperience = require('../handlers/handleExperience');
+const registerCommand = require("../handlers/handleCommand")
 var bot;
 
 module.exports = {
@@ -9,18 +10,10 @@ module.exports = {
     run: async (client) => {
         // client ready event
         client.on('ready', async () => {
-
             bot = client;
 
             const prefix = client.config.prefix;
-            const embedColor = client.config.color;
             const lang = client.config.lang;
-
-            // set value for embed colors
-            client.embedColor = embedColor;
-        
-            // set the default prefix as a client value
-            client.prefix = prefix;
         
             // sets value for language preffered, and checks the language
             try {
@@ -34,6 +27,9 @@ module.exports = {
         
             // register guild data files
             await registerGuildData();
+
+            // register all users
+            await registerUserData();
         
             // register all cmds
             await registerCmds();
@@ -44,6 +40,10 @@ module.exports = {
         
             // activity
             client.user.setActivity(`Light BOT - ${prefix}help`, { type: 'WATCHING' });
+
+            setInterval(async () => {
+                handleExperience(client);
+            }, 120000);
         
         });
     }
@@ -62,12 +62,74 @@ async function registerCmds() {
         console.log(new Error("[Light] An error occurred! No commands are being registered. Please issue a ticket."));
         return process.exit(1);
     }
-  
+
     for(const command of bot.commands) {
-      registerCommand(bot, command);
+        registerCommand(bot, command);
     }
 }
   
+async function registerUserData() {
+    let dataType = bot.config.prefferedDataType.toLowerCase() || "json";
+    switch(dataType) {
+        case "mysql": {
+            const connection = await Data.setupMySQL();
+            let users = bot.users.cache;
+
+            for(var user of users) {
+                let statement = `SELECT count(1) FROM light_users WHERE id=?`;
+                connection.query(statement, [user[0]])
+                .then(([rows, _fields]) => {
+                    if(rows[0]['count(1)'] < 1) {
+                        let statement = `INSERT INTO light_guilds(id, experience) VALUES (?,?)`;
+                        connection.execute(statement, [user[0], 0])
+                        .catch(err => console.error(err));
+                        bot.userData.set(user[0], { experience: 0 });
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+            break;
+        }
+        case "json": {
+            if(!fs.existsSync("./Storage/users")) fs.mkdirSync("./Storage/users");
+            await bot.getFiles("./Storage/users")
+            .then(files => {
+                let users = bot.users.cache;
+
+                files.forEach((file) => {
+                    let user = require(file);
+                    bot.userData.set(file.split("\\").pop().slice(0, -5), user);
+                });
+
+                for(let user of users) {
+                    if(!bot.userData.keyArray().includes(user[0])) {
+                        if(user[1].bot) continue;
+                        fs.writeFileSync(`./Storage/users/${user[0]}.json`, JSON.stringify({ experience: 0 }, null, 2));
+                        bot.userData.set(user[0], { experience: 0 });
+                    }
+                }
+            });
+            break;
+        }
+        case "sqlite": {
+            let connection = await Data.setupSQLite();
+
+            let users = bot.users.cache;
+
+            for(let user of users) {
+                let statement = `SELECT count(1) FROM light_users WHERE id=?`;
+                let result = await connection.prepare(statement).get(user[0]);
+                if(result['count(1)'] < 1) {
+                    let statement = `INSERT INTO light_users(id, experience) VALUES (?,?)`;
+                    connection.prepare(statement).run(user[0], 0);
+                    bot.userData.set(user[0], { experience: 0 });
+                }
+            }
+            break;
+        }
+    }
+}
+
 async function registerGuildData() {
     let dataType = bot.config.prefferedDataType.toLowerCase() || "json";
     switch(dataType) {
@@ -90,6 +152,7 @@ async function registerGuildData() {
             break;
         }
         case "json": {
+            if(!fs.existsSync("./Storage/guilds")) fs.mkdirSync("./Storage/guilds");
             await bot.getFiles("./Storage/guilds")
             .then(files => {
                 let guilds = bot.guilds.cache;

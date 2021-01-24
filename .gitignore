@@ -108,3 +108,5 @@ package.json
 # Extras and data folders
 extras/
 Storage/guilds/
+Storage/users/
+Storage/data.db

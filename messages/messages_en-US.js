@@ -136,6 +136,12 @@ module.exports = {
             This bot was purchased from MC-Market, published by Light Development. Developed and put together by kMagic (ciprian.#6142).
             For any issue with this resource, please contact us at the Light Development server (found in resource page).
             Thank you for your purchase!`;
+        },
+        failed: () => {
+            return `Failed to send you feedback of the help command. Are your DM's from this server enabled?`;
+        },
+        sent: () => {
+            return `📥 | Check your DM's!`;
         }
     },
     LightStartup: () => {

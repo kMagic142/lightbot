@@ -59,6 +59,23 @@ switch(dataType) {
                     ticketCategory: rows[0].ticketCategory,
                     denyMultipleTickets: rows[0].ticketam
                 };
+            },
+            getExpEnabled: async (guildid) => {
+                let statement = `SELECT enableexp FROM light_guilds WHERE id=?`;
+                let [rows] = await this.mysqlPool.query(statement, [guildid]);
+
+                return rows[0].enableexp;
+            },
+            pushExperience: async (experience, userid) => {
+                let statement = `UPDATE light_users SET experience=? WHERE id=?`;
+
+                this.mysqlPool.execute(statement, [experience, userid]);
+            },
+            getExperience: async (userid) => {
+                let statement = `SELECT experience FROM light_users WHERE id=?`;
+                let [rows] = await this.mysqlPool.query(statement, [userid]);
+
+                return rows[0].experience;
             }
         };
         break;
@@ -118,6 +135,38 @@ switch(dataType) {
                 }
             
                 return guild.tickets;
+            },
+            getExpEnabled: async (guildid) => {
+                let guild = client.guildData.get(guildid) || null;
+
+                if(!guild.enableExp) {
+                    guild.enableExp = false;
+
+                    fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
+                    client.guildData.set(guildid, guild);
+                }
+
+                return guild.enableExp;
+            },
+            pushExperience: async (experience, userid) => {
+                let user = client.userData.get(userid) || null;
+                
+                user.experience = experience;
+                
+                fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
+                client.userData.set(userid, user);
+            },
+            getExperience: async (userid) => {
+                let user = client.userData.get(userid) || null;
+
+                if(!user.experience) {
+                    user.experience = 0;
+
+                    fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
+                    client.userData.set(userid, user);
+                }
+                
+                return user.experience;
             }
         };
         break;
@@ -167,6 +216,19 @@ switch(dataType) {
                     ticketCategory: guild.ticketCategory,
                     denyMultipleTickets: guild.ticketam
                 };
+            },
+            getExpEnabled: async (guildid) => {
+                let statement = `SELECT enableexp FROM light_guilds WHERE id=?`;
+                return this.sqlitedb.prepare(statement).get(guildid).enableexp;
+            },
+            pushExperience: async (experience, userid) => {
+                let statement = `UPDATE light_users SET experience=? WHERE id=?`;
+
+                this.sqlitedb.prepare(statement).run(experience, userid);
+            },
+            getExperience: async (userid) => {
+                let statement = `SELECT experience FROM light_users WHERE id=?`;
+                return this.sqlitedb.prepare(statement).get(userid);
             }
         };
         break;
@@ -200,8 +262,10 @@ module.exports.setupMySQL = async () => {
         console.log(`[Light] Initialized MySQL ("${username}"@"${hostname}")`);
             
     
-        let statement = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, PRIMARY KEY(id))`;
-        this.mysqlPool.execute(statement);
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, PRIMARY KEY(id))`;
+        let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, PRIMARY KEY(id))`;
+        this.mysqlPool.execute(guilds);
+        this.mysqlPool.execute(users);
     
         return this.mysqlPool;
 };
@@ -211,9 +275,10 @@ module.exports.setupSQLite = async () => {
 
         this.sqlitedb = new SQLite('./Storage/data.db');
 
-        let statement = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, PRIMARY KEY(id))`;
-
-        this.sqlitedb.prepare(statement).run();
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, PRIMARY KEY(id))`;
+        let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, PRIMARY KEY(id))`;
+        this.sqlitedb.prepare(guilds).run();
+        this.sqlitedb.prepare(users).run();
 
         return this.sqlitedb;
 };

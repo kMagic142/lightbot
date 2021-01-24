@@ -2,7 +2,7 @@
 require('dotenv').config();
 const Discord = require('discord.js');
 const { readdir } = require('fs').promises;
-const { resolve, parse, basename } = require('path');
+const { resolve, parse } = require('path');
 const handleEvents = require('./handlers/handleEvents.js');
 
 const client = new Discord.Client({fetchAllMembers: true});
@@ -13,10 +13,8 @@ let logging = client.config.logging;
 client.commands = [];
 client.events = [];
 client.guildData = new Discord.Collection();
-
-let callback = (err) => {
-  if(err) throw err;
-};
+client.userData = new Discord.Collection();
+//client.expData = new Discord.Collection();
 
 
 async function registerEvents() {
@@ -45,7 +43,7 @@ client.getFiles = async (dir) => {
       const res = resolve(dir, subdir.name);
       return subdir.isDirectory() ? client.getFiles(res) : res;
   }));
-  return Array.prototype.concat(...files);
+  return Array.from(new Set(files.flat()));
 };
 
 client.getDirectories = async (dir) => {
@@ -72,5 +70,7 @@ if (logging !== true && logging !== false) {
 client.login(token);
 
 registerEvents();
+
+client.setMaxListeners(20);
 
 module.exports.client = client;

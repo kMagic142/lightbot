@@ -9,6 +9,8 @@ module.exports = {
     permissions: [],
     requiredRoles: [],
     run: (message, args, text) => {
-        message.reply(message.client.language.ping(message.client, message.author));
+        let client = message.client;
+
+        message.channel.send(`Your EXP is: ${client.userData.get(message.author.id).experience}`);
     }
 };

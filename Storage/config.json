@@ -5,6 +5,7 @@
   "color": "BLUE",
   "lang": "en-US",
   "owner": "731227820784877678",
+  "deleteUserDataIfLeavesGuild": false,
   "prefferedDataType": "json",
   "mysql": {
     "hostname": "192.168.1.8",
