@@ -11,7 +11,7 @@ module.exports = {
     maxArgs: 1,
     permissions: ["MANAGE_GUILD"],
     requiredRoles: [],
-    run: async (message, args, _text) => {
+    run: async (message, args) => {
         let channel = message.channel;
         let client = message.client;
         var guild = await Data.getJoinLeave(message.guild.id);

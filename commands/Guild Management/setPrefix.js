@@ -10,7 +10,7 @@ module.exports = {
     maxArgs: null,
     permissions: ["MANAGE_GUILD"],
     requiredRoles: [],
-    run: async (message, args, text) => {
+    run: async (message, _args, text) => {
         var client = message.client;
         var user = message.author;
         let prefix;

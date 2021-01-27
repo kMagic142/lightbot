@@ -9,7 +9,7 @@ module.exports = {
     maxArgs: null,
     permissions: [],
     requiredRoles: [],
-    run: async (message, args, text) => {
+    run: async (message) => {
         var client = message.client;
         let guild = message.guild;
 

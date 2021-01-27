@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Data = require('../data/Data.js');
 const handleExperience = require('../handlers/handleExperience');
-const registerCommand = require("../handlers/handleCommand")
+const registerCommand = require("../handlers/handleCommand");
 var bot;
 
 module.exports = {
@@ -83,7 +83,7 @@ async function registerUserData() {
                         let statement = `INSERT INTO light_guilds(id, experience) VALUES (?,?)`;
                         connection.execute(statement, [user[0], 0])
                         .catch(err => console.error(err));
-                        bot.userData.set(user[0], { experience: 0 });
+                        bot.userData.set(user[0], { experience: 0, level: 0 });
                     }
                 })
                 .catch(err => console.error(err));
@@ -105,7 +105,7 @@ async function registerUserData() {
                     if(!bot.userData.keyArray().includes(user[0])) {
                         if(user[1].bot) continue;
                         fs.writeFileSync(`./Storage/users/${user[0]}.json`, JSON.stringify({ experience: 0 }, null, 2));
-                        bot.userData.set(user[0], { experience: 0 });
+                        bot.userData.set(user[0], { experience: 0, level: 0 });
                     }
                 }
             });
@@ -122,7 +122,7 @@ async function registerUserData() {
                 if(result['count(1)'] < 1) {
                     let statement = `INSERT INTO light_users(id, experience) VALUES (?,?)`;
                     connection.prepare(statement).run(user[0], 0);
-                    bot.userData.set(user[0], { experience: 0 });
+                    bot.userData.set(user[0], { experience: 0, level: 0 });
                 }
             }
             break;

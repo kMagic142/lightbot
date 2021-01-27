@@ -72,10 +72,10 @@ switch(dataType) {
                 this.mysqlPool.execute(statement, [experience, userid]);
             },
             getExperience: async (userid) => {
-                let statement = `SELECT experience FROM light_users WHERE id=?`;
+                let statement = `SELECT experience, level FROM light_users WHERE id=?`;
                 let [rows] = await this.mysqlPool.query(statement, [userid]);
 
-                return rows[0].experience;
+                return rows[0];
             }
         };
         break;
@@ -151,7 +151,7 @@ switch(dataType) {
             pushExperience: async (experience, userid) => {
                 let user = client.userData.get(userid) || null;
                 
-                user.experience = experience;
+                user = experience;
                 
                 fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
                 client.userData.set(userid, user);
@@ -159,14 +159,27 @@ switch(dataType) {
             getExperience: async (userid) => {
                 let user = client.userData.get(userid) || null;
 
-                if(!user.experience) {
-                    user.experience = 0;
+                if(!user.experience || user.level) {
+                    user.experience = user.experience || 0;
+                    user.level = user.level || 0;
 
                     fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
                     client.userData.set(userid, user);
                 }
                 
-                return user.experience;
+                return { experience: user.experience, level: user.level };
+            },
+            getCoins: async (userid) => {
+                let user = client.userData.get(userid) || null;
+
+                if(!user.coins) {
+                    user.coins = 0;
+
+                    fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
+                    client.userData.set(userid, user);
+                }
+
+                return { coins: user.coins };
             }
         };
         break;
@@ -227,7 +240,7 @@ switch(dataType) {
                 this.sqlitedb.prepare(statement).run(experience, userid);
             },
             getExperience: async (userid) => {
-                let statement = `SELECT experience FROM light_users WHERE id=?`;
+                let statement = `SELECT experience, level FROM light_users WHERE id=?`;
                 return this.sqlitedb.prepare(statement).get(userid);
             }
         };

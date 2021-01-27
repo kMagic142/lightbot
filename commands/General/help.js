@@ -2,8 +2,8 @@ const { MessageEmbed, Collection } = require("discord.js");
 const path = require('path');
 const Data = require("../../data/Data");
 
-const previous = '🔺';
-const next = '🔻';
+const previous = '⬅️';
+const next = '➡️';
 var pageData = new Collection();
 
 module.exports = {
@@ -31,8 +31,9 @@ module.exports = {
     
         await message.channel.send(client.language.help.sent());
         
-        await msg.react(next);
         await msg.react(previous);
+        await msg.react(next);
+
         let filter = (reaction, user) => user.id !== client.user.id && (reaction.emoji.name === previous || reaction.emoji.name === next) && user.id === message.author.id;
         let collector = msg.createReactionCollector(filter, {time: 120000});
 
@@ -67,6 +68,11 @@ async function getHelp(categories, page, client, message) {
                 string += `${prefix}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}\nAliases: ${aliases}\n${command.description}\n\n`;
             }
         });
+
+        if(path.parse(category).name.toLowerCase() === "general") {
+            const command = require(`${category}/help.js`);
+            string = `${await Data.getPrefix(message.guild.id)}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}\nAliases: ${command.aliases.join(", ")}\n${command.description}\n\n`;
+        }
 
         pageData.set(path.parse(category).name, string);
     }

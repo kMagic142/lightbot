@@ -8,7 +8,7 @@ module.exports = {
     maxArgs: 1,
     permissions: [],
     requiredRoles: [],
-    run: (message, args, text) => {
+    run: (message) => {
         let client = message.client;
         let user = message.mentions.members.first() || null;
 

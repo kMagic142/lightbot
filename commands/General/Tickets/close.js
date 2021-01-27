@@ -7,7 +7,7 @@ module.exports = {
     maxArgs: null,
     permissions: [],
     requiredRoles: [],
-    run: (message, args, text) => {
+    run: (message) => {
         let client = message.client;
 
         if (!message.channel.name.startsWith(`ticket-`)) {

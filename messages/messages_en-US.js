@@ -130,6 +130,92 @@ module.exports = {
             }
         }
     },
+    experience: {
+        info: (experience) => {
+            return `Your EXP is: ${experience}`;
+        },
+        levelUp: (user, level, nextLevelExp) => {
+            return `Hurrayyy <@${user.id}>!! You just **leveled up** to Level **${level}**!\nYou need **${nextLevelExp}** exp to level up again.`;
+        }
+    },
+    ban: {
+        selfban: () => {
+            return `:x: | Don't ban yourself!`;
+        },
+        banbot: () => {
+            return `:x: | If you wish to get me out of this server, please ban me manually.`;
+        },
+        roleHigher: () => {
+            return `:x: | You cannot ban this member.`;
+        },
+        noBotPermission: () => {
+            return `:x: | Failed in banning that member. Make sure that I have the "Ban Members" permission!`;
+        },
+        bannedSuccessfully: (member, reason) => {
+            return `✅ | ${member.user.tag} is now banned. ${reason ? ` Reason: ${reason}` : ''}`;
+        },
+        confirmation: (guildMember) => {
+            return `
+✅ | I found the user that you want to ban. Can you confirm that I found the right person?
+
+User: <@${guildMember.id}>
+ID: ${guildMember.id}
+Tag: ${guildMember.user.tag}
+
+\`Please respond with yes or no.\``;
+        },
+        wrongMember: () => {
+            return `:x: | Got it. Try again and make sure you type their name correctly.`;
+        },
+        wrongAnswer: () => {
+            return `:x: | You should have answered with __yes__ or __no__. Please try again.`;
+        },
+        timesup: (guildMember) => {
+            return `
+            :x: | Wake up! The time ran out.
+            You didn't confirm that ${guildMember.user.tag} was the member you wanted to ban.
+            `;
+        }
+    },
+    kick: {
+        selfkick: () => {
+            return `:x: | Don't kick yourself!`;
+        },
+        kickbot: () => {
+            return `:x: | If you wish to get me out of this server, please kick me manually.`;
+        },
+        roleHigher: () => {
+            return `:x: | You cannot kick this member.`;
+        },
+        noBotPermission: () => {
+            return `:x: | Failed in kicking that member. Make sure that I have the "Kick Members" permission!`;
+        },
+        kickedSuccessfully: (member, reason) => {
+            return `✅ | ${member.user.tag} is now kicked. ${reason ? ` Reason: ${reason}` : ''}`;
+        },
+        confirmation: (guildMember) => {
+            return `
+✅ | I found the user that you want to kick. Can you confirm that I found the right person?
+
+User: <@${guildMember.id}>
+ID: ${guildMember.id}
+Tag: ${guildMember.user.tag}
+
+\`Please respond with yes or no.\``;
+        },
+        wrongMember: () => {
+            return `:x: | Got it. Try again and make sure you type their name correctly.`;
+        },
+        wrongAnswer: () => {
+            return `:x: | You should have answered with __yes__ or __no__. Please try again.`;
+        },
+        timesup: (guildMember) => {
+            return `
+            :x: | Wake up! The time ran out.
+            You didn't confirm that ${guildMember.user.tag} was the member you wanted to kick.
+            `;
+        }
+    },
     help: {
         description: () => {
             return `Light is a feature-rich Discord BOT with many utilities, fun and moderation facilities, and perfect for any Discord server.

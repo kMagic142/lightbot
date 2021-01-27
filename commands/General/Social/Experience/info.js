@@ -1,6 +1,6 @@
 module.exports = {
     enabled: true,
-    name: 'exp info',
+    name: 'social exp info',
     aliases: ['xp info', 'xp'],
     description: 'Display informations about user\'s gathered exp.',
     expectedArgs: '<[@Member]>',
@@ -8,9 +8,11 @@ module.exports = {
     maxArgs: 1,
     permissions: [],
     requiredRoles: [],
-    run: (message, args, text) => {
+    run: (message) => {
         let client = message.client;
 
-        message.channel.send(`Your EXP is: ${client.userData.get(message.author.id).experience}`);
+        let user = message.mentions.members.first() || message.author;
+
+        message.channel.send(client.language.experience.info(client.userData.get(user.id).experience));
     }
 };
