@@ -47,7 +47,7 @@ module.exports = {
 
 
         const embed = new MessageEmbed()
-        .setColor("ORANGE")
+        .setColor(client.embedColor)
         .setAuthor("EXP Leaderboard in this guild", message.guild.iconURL())
         .setThumbnail(message.guild.iconURL())
         .setDescription(getDescription())

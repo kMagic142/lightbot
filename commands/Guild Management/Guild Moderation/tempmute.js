@@ -10,7 +10,7 @@ module.exports = {
     maxArgs: 3,
     permissions: ['MANAGE_MESSAGES'],
     requiredRoles: [],
-    run: async (message, args, text) => {
+    run: async (message, args) => {
         const client = message.client;
         let time = args[1];
 

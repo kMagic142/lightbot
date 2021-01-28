@@ -8,6 +8,14 @@ module.exports = {
             let guild = member.guild;
             if(!guild.available) return;
 
+            client.userData.set(member.id, {
+                experience: 0,
+                level: 0,
+                coins: 0
+            });
+
+            fs.writeFileSync(`./Storage/users/${member.id}.json`, client.userData.get(member.id));
+
             if(Data.getJoinLeave(guild.id).enabled) {
                 let channel = Data.getJoinLeave(guild.id).channel;
 

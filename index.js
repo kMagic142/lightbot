@@ -14,7 +14,6 @@ client.commands = [];
 client.events = [];
 client.guildData = new Discord.Collection();
 client.userData = new Discord.Collection();
-//client.expData = new Discord.Collection();
 
 
 async function registerEvents() {

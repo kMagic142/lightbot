@@ -9,7 +9,7 @@ module.exports = {
     maxArgs: null,
     permissions: ["MANAGE_GUILD"],
     requiredRoles: [],
-    run: async (message, _args, _text) => {
+    run: async (message) => {
         var client = message.client;
 
         let msg = await message.channel.send(client.language.warnlogs.setup.channelSetup(client, message));

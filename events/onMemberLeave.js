@@ -6,6 +6,11 @@ module.exports = {
             let guild = member.guild;
             if(!guild.available) return;
 
+            if(client.config.deleteUserDataIfLeavesGuild) {
+                client.userData.delete(member.id);
+                fs.unlinkSync(`./Storage/users/${member.id}.json`);
+            }
+
             if(Data.getJoinLeave(guild.id).enabled) {
                 let channel = Data.getJoinLeave(guild.id).channel;
 

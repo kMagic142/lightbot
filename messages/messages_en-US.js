@@ -3,13 +3,13 @@ const Data = require('../data/Data.js');
 
 module.exports = {
     generals: {
-        noPerm: (user, client) => {
+        noPerm: () => {
             return "You do not have the permission required for this command.";
         },
-        noRoles: (role, client) => {
+        noRoles: (role) => {
             return `You must have the \`${role}\` to use this command.`;
         },
-        incorrectUsage: (prefix, alias, expectedArgs, client) => {
+        incorrectUsage: (prefix, alias, expectedArgs) => {
             return `Incorrect usage! Use \`${prefix}${alias} ${expectedArgs}\``;
         }
     },
@@ -17,24 +17,24 @@ module.exports = {
         return `Hey <@${user.id}>! My ping is ${client.ws.ping}ms.`;
     },
     setPrefix: {
-        tooLong: (client, user) => {
+        tooLong: () => {
             return `That prefix is too long! Try something with 8 or less characters.`;
         },
-        success: (prefix, client, user) => {
+        success: (prefix) => {
             return `Successfully set this guild's prefix to \`${prefix}\`!`;
         },
-        incorrectUsage: (client, user) => {
+        incorrectUsage: () => {
             return `Prefix entered wrongly. Try again and type the prefix like this: "yourPrefix"`;
         }
     },
     joinLeave: {
-        joinMessage: (member, client) => {
+        joinMessage: (member) => {
             return `Welcome, **<@${member.id}>**! Please enjoy your stay in **${member.guild.name}**`;
         },
-        leaveMessage: (member, client) => {
+        leaveMessage: (member) => {
             return `**<@${member.id}>** has left the guild.`;
         },
-        disabled: (message, client) => {
+        disabled: () => {
             return `Welcome messages are disabled for this guild.`;
         },
         status: (status) => {
@@ -48,10 +48,10 @@ module.exports = {
             return `There is no channel id linked with this guild. Please proceed to run the command again without the \`enable\` at the end to begin setup.`;
         },
         setup: {
-            channelSetup: (client, message) => {
+            channelSetup: (client) => {
                 const embed = new MessageEmbed()
                 .setAuthor(client.user.username, client.user.avatarURL())
-                .setColor("ORANGE")
+                .setColor(client.embedColor)
                 .addField('Setting up guild join and guild leave messages...',
             `To set everything up, you first need to have a channel in which I can announce when members join or leave the guild.
             Please copy your desired channel's ID or NAME (with or without #) and paste it in here.
@@ -59,7 +59,7 @@ module.exports = {
                 .setFooter("Type cancel if you'd like to dismiss this setup.");
                 return embed;
             },
-            invalidChannel: (content, message, client) => {
+            invalidChannel: () => {
                 return `The channel you entered is invalid, please try again.`;
             },
             timeError: () => {
@@ -68,10 +68,10 @@ module.exports = {
             canceled: () => {
                 return `Setup canceled. Run the command again if you wish to proceed with the setup.`;
             },
-            success: (channel, message, client) => {
+            success: (channel, _message, client) => {
                 const embed = new MessageEmbed()
                 .setAuthor(client.user.username, client.user.avatarURL())
-                .setColor("ORANGE")
+                .setColor(client.embedColor)
                 .addField('Join / Leave announcements successfully enabled for this guild!',
             `Join and Leave announcements have been enabled for this guild in <#${channel.id}>. If you wish to modify any
             messages, please visit the coresponding language file or use the web dashboard.`);
@@ -81,10 +81,10 @@ module.exports = {
     },
     warnlogs: {
         setup: {
-            channelSetup: (client, message) => {
+            channelSetup: (client) => {
                 const embed = new MessageEmbed()
                 .setAuthor(client.user.username, client.user.avatarURL())
-                .setColor("ORANGE")
+                .setColor(client.embedColor)
                 .addField('Setting up guild warn logs channel...',
             `To set everything up, you first need to have a channel in which I can announce when members get warned or their warns get removed.
             Please copy your desired channel's ID or NAME (with or without #) and paste it in here.
@@ -92,7 +92,7 @@ module.exports = {
                 .setFooter("Type cancel if you'd like to dismiss this setup.");
                 return embed;
             },
-            invalidChannel: (content, message, client) => {
+            invalidChannel: () => {
                 return `The channel you entered is invalid, please try again.`;
             },
             timeError: () => {
@@ -101,10 +101,10 @@ module.exports = {
             canceled: () => {
                 return `Setup canceled. Run the command again if you wish to proceed with the setup.`;
             },
-            success: (channel, message, client) => {
+            success: (channel, _message, client) => {
                 const embed = new MessageEmbed()
                 .setAuthor(client.user.username, client.user.avatarURL())
-                .setColor("ORANGE")
+                .setColor(client.embedColor)
                 .addField('Warn logging is successfully set up for this guild!',
             `Warn logging has been enabled for this guild in <#${channel.id}>. If you wish to modify any
             messages, please visit the coresponding language file or use the web dashboard.`);
@@ -114,14 +114,14 @@ module.exports = {
         warn: (author, member, reason, warnid) => {
             const embed = new MessageEmbed()
             .setAuthor(`${author.username} warned someone!`, author.avatarURL())
-            .setColor("ORANGE")
+            .setColor(author.client.embedColor)
             .addField(`Warned user: ${member.user.tag}`, `ID: ${member.id}\nWarn ID: ${warnid}\nReason: ${reason}`);
             return embed;
         },
         unwarn: (author, member, warnid) => {
             const embed = new MessageEmbed()
             .setAuthor(`${author.username} unwarned someone!`, author.avatarURL())
-            .setColor("ORANGE")
+            .setColor(author.client.embedColor)
             .addField(`Warned user: ${member.tag}`, `ID: ${member.id}\nWarn ID: ${warnid}`);
             return embed;
         }
@@ -167,7 +167,7 @@ module.exports = {
             ticketOpened: (channel, client, user) => {
                 const embed = new MessageEmbed()
                 .setAuthor(client.user.username, client.user.avatarURL())
-                .setColor("ORANGE")
+                .setColor(client.embedColor)
                 .addField('Ticket informations', 
                 `Created by ${user.tag} (${user.id})
                 Time of creation: ${channel.createdAt}`)
@@ -326,7 +326,7 @@ Confirm that this is the right member.
             return `Failed to send you feedback of the help command. Are your DM's from this server enabled?`;
         },
         sent: () => {
-            return `📥 | Check your DM's!`;
+            return `📥 | Check your DMs!`;
         }
     },
     LightStartup: () => {

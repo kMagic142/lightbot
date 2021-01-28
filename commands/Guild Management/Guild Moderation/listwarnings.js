@@ -29,7 +29,7 @@ module.exports = {
         return message.channel.send(client.language.warn.noWarns());
 
         const embed = new MessageEmbed()
-        .setColor("ORANGE")
+        .setColor(client.embedColor)
         .setAuthor(`Showing warnings for ${user.username}`, user.avatarURL())
         .setDescription(description);
 

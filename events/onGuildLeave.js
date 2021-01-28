@@ -6,7 +6,7 @@ module.exports = {
     enabled: true,
     run: async (client) => {
         client.on('guildDelete', async (guild) => {
-            if(Data.getGuild(guild.id)) {
+            if(await Data.getGuild(guild.id)) {
                 Data.deleteGuild(guild.id);
             }
         });

@@ -89,7 +89,7 @@ async function getHelp(categories, page, client, message) {
     }
 
     const embed = new MessageEmbed();
-    embed.setColor("ORANGE");
+    embed.setColor(client.embedColor);
     embed.setAuthor(client.user.username, client.user.avatarURL());
     embed.setThumbnail(client.user.avatarURL());
 

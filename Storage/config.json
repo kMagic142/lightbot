@@ -2,7 +2,7 @@
   "token": "empty-as-my-soul",
   "prefix": "h!",
   "logging": true,
-  "color": "BLUE",
+  "embedColor": "BLUE",
   "lang": "en-US",
   "owner": "731227820784877678",
   "deleteUserDataIfLeavesGuild": false,

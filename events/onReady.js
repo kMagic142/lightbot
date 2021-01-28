@@ -14,6 +14,8 @@ module.exports = {
 
             const prefix = client.config.prefix;
             const lang = client.config.lang;
+
+            client.embedColor = client.config.embedColor;
         
             // sets value for language preffered, and checks the language
             try {
