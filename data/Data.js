@@ -76,6 +76,36 @@ switch(dataType) {
                 let [rows] = await this.mysqlPool.query(statement, [userid]);
 
                 return rows[0];
+            },
+            getCoins: async (userid) => {
+                let statement = `SELECT coins FROM light_users WHERE id=?`;
+                let [rows] = await this.mysqlPool.query(statement, [userid]);
+
+                return rows[0];
+            },
+            setWarn: async (userid, guildid, reason, timestamp, warnid) => {
+                let statement = `INSERT INTO light_warns(id, guildid, reason, timestamp, warnid) VALUES (?,?,?,?)`;
+                this.mysqlPool.execute(statement, [userid, guildid, reason, timestamp, warnid]);
+            },
+            getWarns: async (userid) => {
+                let statement = `SELECT * FROM light_warns WHERE id=?`;
+                let [rows] = await this.mysqlPool.query(statement, [userid]);
+
+                return rows[0];
+            },
+            removeWarn: async (userid, guildid, warnid) => {
+                let statement = `DELETE FROM light_warns WHERE id=? AND guildid=? AND warnid=?`;
+                this.mysqlPool.execute(statement, [userid, guildid, warnid]);
+            },
+            getWarnsChannel: async (guildid) => {
+                let statement = `SELECT warnschannel FROM light_guilds WHERE id=?`;
+                let [rows] = await this.mysqlPool.query(statement, [userid]);
+
+                return rows[0];
+            },
+            setWarnLogs: async (guildid, channel) => {
+                let statement = `UPDATE light_guilds SET warnschannel=? WHERE id=?`;
+                this.mysqlPool.execute(statement, [channel, guildid]);
             }
         };
         break;
@@ -180,6 +210,57 @@ switch(dataType) {
                 }
 
                 return { coins: user.coins };
+            },
+            setWarn: async (userid, guildid, reason, timestamp, warnid) => {
+                let user = client.userData.get(userid);
+
+                if(!user.warnings) {
+                    user.warnings = [
+                        {
+                            guild: guildid,
+                            timestamp: timestamp,
+                            id: warnid,
+                            reason: reason
+                        }
+                    ];
+                } else {
+                    user.warnings.push(
+                        {
+                            guild: guildid,
+                            timestamp: timestamp,
+                            id: warnid,
+                            reason: reason
+                        }
+                    );
+                }
+
+                fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
+                client.userData.set(userid, user);
+            },
+            getWarns: async (userid) => {
+                return client.userData.get(userid).warnings || null;
+            },
+            removeWarn: async (userid, warnid, guildid) => {
+                let user = client.userData.get(userid);
+
+                let warn = user.warnings.findIndex(w => w.guild === guildid && w.id === warnid);
+                user.warnings.splice(warn, warn >= 0 ? 1 : 0);
+
+                client.userData.set(userid, user);
+                fs.writeFileSync(`./Storage/users/${userid}.json`, JSON.stringify(user, null, 2));
+            },
+            getWarnsChannel: async (guildid) => {
+                let channel = client.guildData.get(guildid).warnsChannel || null;
+
+                return channel;
+            },
+            setWarnLogs: async (guildid, channel) => {
+                let guild = client.guildData.get(guildid) || null;
+
+                guild.warnsChannel = channel;
+
+                fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
+                client.guildData.set(guildid, guild);
             }
         };
         break;
@@ -242,6 +323,30 @@ switch(dataType) {
             getExperience: async (userid) => {
                 let statement = `SELECT experience, level FROM light_users WHERE id=?`;
                 return this.sqlitedb.prepare(statement).get(userid);
+            },
+            getCoins: async (userid) => {
+                let statement = `SELECT coins FROM light_users WHERE id=?`;
+                return this.sqlitedb.prepare(statement).get(userid);
+            },
+            setWarn: async (userid, guildid, reason, timestamp, warnid) => {
+                let statement = `INSERT INTO light_warns(id, guildid, reason, timestamp, warnid) VALUES (?,?,?,?)`;
+                this.sqlitedb.prepare(statement).get(userid, guildid, reason, timestamp, warnid);
+            },
+            getWarns: async (userid) => {
+                let statement = `SELECT * FROM light_warns WHERE id=?`;
+                return this.sqlitedb.prepare(statement).get(userid);
+            },
+            removeWarn: async (userid, guildid, warnid) => {
+                let statement = `DELETE FROM light_warns WHERE id=? AND guildid=? AND warnid=?`;
+                this.sqlitedb.prepare(statement).run(userid, guildid, warnid);
+            },
+            getWarnsChannel: async (guildid) => {
+                let statement = `SELECT warnschannel FROM light_guilds WHERE id=?`;
+                return this.sqlitedb.prepare(statement).get(guildid);
+            },
+            setWarnLogs: async (guildid, channel) => {
+                let statement = `UPDATE light_guilds SET warnschannel=? WHERE id=?`;
+                this.sqlitedb.prepare(statement).run(channel, guildid);
             }
         };
         break;
@@ -275,10 +380,12 @@ module.exports.setupMySQL = async () => {
         console.log(`[Light] Initialized MySQL ("${username}"@"${hostname}")`);
             
     
-        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, PRIMARY KEY(id))`;
-        let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, PRIMARY KEY(id))`;
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20) PRIMARY KEY(id))`;
+        let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, level REAL, coins BIGINT PRIMARY KEY(id))`;
+        let warnings = `CREATE TABLE IF NOT EXISTS light_warnings(id BIGINT(20) guildid BIGINT, reason TEXT, timestamp TEXT, warnid TEXT PRIMARY KEY(id))`;
         this.mysqlPool.execute(guilds);
         this.mysqlPool.execute(users);
+        this.mysqlPool.execute(warnings);
     
         return this.mysqlPool;
 };
@@ -288,10 +395,12 @@ module.exports.setupSQLite = async () => {
 
         this.sqlitedb = new SQLite('./Storage/data.db');
 
-        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, PRIMARY KEY(id))`;
-        let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, PRIMARY KEY(id))`;
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20) PRIMARY KEY(id))`;
+        let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, level REAL, coins BIGINT PRIMARY KEY(id))`;
+        let warnings = `CREATE TABLE IF NOT EXISTS light_warnings(id BIGINT(20) guildid BIGINT, reason TEXT, timestamp TEXT, warnid TEXT PRIMARY KEY(id))`;
         this.sqlitedb.prepare(guilds).run();
         this.sqlitedb.prepare(users).run();
+        this.sqlitedb.prepare(warnings).run();
 
         return this.sqlitedb;
 };

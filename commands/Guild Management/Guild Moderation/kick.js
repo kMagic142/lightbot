@@ -7,7 +7,7 @@ module.exports = {
     description: 'Kicks a user from the server.',
     expectedArgs: '<@Member> or <Username>' ,
     minArgs: 1,
-    maxArgs: 2,
+    maxArgs: null,
     permissions: ['KICK_MEMBERS'],
     requiredRoles: [],
     run: async (message, args, reason) => {
@@ -15,8 +15,8 @@ module.exports = {
 
         let member = message.mentions.members.first() || args[0];
 
-        let yes = 'yes';
-		let no = 'no';
+        let yes = '✅';
+		let no = '❌';
 
 		async function getMember(arguments) {
 			let members = [];
@@ -54,36 +54,37 @@ module.exports = {
 			if (guildMember.id === message.author.id) return message.channel.send(client.language.kick.selfkick());
 			if (guildMember.id === client.user.id) return message.channel.send(client.language.kick.kickbot());
 
-			message.channel.send(client.language.kick.confirmation(guildMember));
+			let msg = await message.channel.send(client.language.kick.confirmation(guildMember));
 
+			await msg.react(yes);
+			await msg.react(no);
 
-			message.channel.awaitMessages(m => m.author.id === message.author.id, {
-				max: 1,
-				time: 60000,
-				errors: ['time']
-			})
-			.then(async (collected) => {
-				var isYes = collected.first().content.toUpperCase() === yes.toUpperCase();
-                var isNo = collected.first().content.toUpperCase() === no.toUpperCase();
+			let filter = (reaction, user) => user.id !== client.user.id && (reaction.emoji.name === yes || reaction.emoji.name === no) && user.id === message.author.id;
+			let collector = msg.createReactionCollector(filter, {time: 60000});
+			collector.on('collect', async (collected) => {
+				var isYes = collected.emoji.name === yes;
+                var isNo = collected.emoji.name === no;
                 
                 switch(true) {
                     case isNo:
-                        message.channel.send(client.language.kick.wrongMember());
+						message.channel.send(client.language.kick.wrongMember());
+						collector.stop();
                         break;
                     case isYes:
                         const options = {};
 					    if (reason) options.reason = reason;
 
 					    await message.guild.members.kick(guildMember, options);
-                        message.channel.send(client.language.kick.kickedSuccessfully(guildMember, reason));
+						message.channel.send(client.language.kick.kickedSuccessfully(guildMember, reason));
+						collector.stop();
                         break;
-                    default:
-                        message.channel.send(client.language.kick.wrongAnswer());
                 }
-			})
-			.catch(err => {
-				if(err) throw err;
-				return message.channel.send(client.language.kick.timesup());
+			});
+
+			collector.on('end', (_collected, reason) => {
+				if(reason === "time")
+				message.channel.send(client.language.kick.timesup(guildMember));
+				return msg.reactions.removeAll();
 			});
 		}
     }

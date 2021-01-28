@@ -10,9 +10,13 @@ module.exports = {
     requiredRoles: [],
     run: (message) => {
         let client = message.client;
-
         let user = message.mentions.members.first() || message.author;
+        let data = client.userData.get(user.id);
 
-        message.channel.send(client.language.experience.info(client.userData.get(user.id).experience));
+
+        let nextExp = 25 * Math.floor(data.level) * (1 + Math.floor(data.level));
+
+
+        message.channel.send(client.language.experience.info(data, nextExp));
     }
 };

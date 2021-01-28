@@ -48,7 +48,7 @@ module.exports = {
 
         const embed = new MessageEmbed()
         .setColor("ORANGE")
-        .setAuthor("Experience Leaderboard for this guild", message.guild.iconURL())
+        .setAuthor("EXP Leaderboard in this guild", message.guild.iconURL())
         .setThumbnail(message.guild.iconURL())
         .setDescription(getDescription())
         .setFooter(`Your rank is #${userRank}`, message.author.avatarURL());

@@ -71,6 +71,6 @@ client.login(token);
 
 registerEvents();
 
-client.setMaxListeners(20);
+client.setMaxListeners(30);
 
 module.exports.client = client;

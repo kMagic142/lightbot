@@ -1,9 +1,11 @@
 const { MessageEmbed, Collection } = require("discord.js");
+const { readdir } = require('fs').promises;
 const path = require('path');
 const Data = require("../../data/Data");
 
-const previous = '⬅️';
 const next = '➡️';
+const previous = '⬅️';
+
 var pageData = new Collection();
 
 module.exports = {
@@ -26,6 +28,7 @@ module.exports = {
         try {
             msg = await message.author.send(await getHelp(categories, page, client, message));
         } catch(e) {
+            if(e) throw e;
             return message.channel.send(client.language.help.failed());
         }
     
@@ -54,25 +57,33 @@ module.exports = {
 
     }
 };
+
+async function getFiles (dir) {
+    const subdirs = await readdir(dir, { withFileTypes: true });
+    const files = await Promise.all(subdirs.map((subdir) => {
+        const res = path.resolve(dir, subdir.name);
+        return subdir.isDirectory() ? null : res;
+    }));
+    return Array.from(new Set(files.flat()));
+}
+
+
 async function getHelp(categories, page, client, message) {
     for(const category of categories) {
+        if(path.parse(category).name === "Admin" && message.author.id !== client.owner) continue;
         string = "";
-        await client.getFiles(category)
+        await getFiles(category)
         .then(async cmds => {
             for(const c of cmds) {
+                if(!c) continue;
                 const command = require(c);
 
                 let prefix = await Data.getPrefix(message.guild.id);
 
-                const aliases = (command.aliases instanceof Array) ? (command.aliases.filter(cmd => cmd !== command.name)).join(", ") : command.aliases || "none";
-                string += `${prefix}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}\nAliases: ${aliases}\n${command.description}\n\n`;
+                const aliases = (command.aliases instanceof Array) ? (command.aliases.filter(cmd => cmd !== command.name)).join(", ") : command.aliases || null;
+                string += `${prefix}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}${aliases ? `\nAliases: ${aliases}` : ""}\n${command.description}\n\n`;
             }
         });
-
-        if(path.parse(category).name.toLowerCase() === "general") {
-            const command = require(`${category}/help.js`);
-            string = `${await Data.getPrefix(message.guild.id)}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}\nAliases: ${command.aliases.join(", ")}\n${command.description}\n\n`;
-        }
 
         pageData.set(path.parse(category).name, string);
     }

@@ -79,6 +79,53 @@ module.exports = {
             }
         }
     },
+    warnlogs: {
+        setup: {
+            channelSetup: (client, message) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor("ORANGE")
+                .addField('Setting up guild warn logs channel...',
+            `To set everything up, you first need to have a channel in which I can announce when members get warned or their warns get removed.
+            Please copy your desired channel's ID or NAME (with or without #) and paste it in here.
+            Make sure I have access to that channel before you proceed!`)
+                .setFooter("Type cancel if you'd like to dismiss this setup.");
+                return embed;
+            },
+            invalidChannel: (content, message, client) => {
+                return `The channel you entered is invalid, please try again.`;
+            },
+            timeError: () => {
+                return `Time expired. Please run the command again if you wish to continue.`;
+            },
+            canceled: () => {
+                return `Setup canceled. Run the command again if you wish to proceed with the setup.`;
+            },
+            success: (channel, message, client) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor("ORANGE")
+                .addField('Warn logging is successfully set up for this guild!',
+            `Warn logging has been enabled for this guild in <#${channel.id}>. If you wish to modify any
+            messages, please visit the coresponding language file or use the web dashboard.`);
+                return embed;
+            }
+        },
+        warn: (author, member, reason, warnid) => {
+            const embed = new MessageEmbed()
+            .setAuthor(`${author.username} warned someone!`, author.avatarURL())
+            .setColor("ORANGE")
+            .addField(`Warned user: ${member.user.tag}`, `ID: ${member.id}\nWarn ID: ${warnid}\nReason: ${reason}`);
+            return embed;
+        },
+        unwarn: (author, member, warnid) => {
+            const embed = new MessageEmbed()
+            .setAuthor(`${author.username} unwarned someone!`, author.avatarURL())
+            .setColor("ORANGE")
+            .addField(`Warned user: ${member.tag}`, `ID: ${member.id}\nWarn ID: ${warnid}`);
+            return embed;
+        }
+    },
     tickets: {
         add: {
             notTicketChannel: () => {
@@ -131,11 +178,11 @@ module.exports = {
         }
     },
     experience: {
-        info: (experience) => {
-            return `Your EXP is: ${experience}`;
+        info: (data, nextExp) => {
+            return `Gathered EXP: **${data.experience} EXP**. Level **${Math.floor(data.level)}** \`[${data.experience}/${nextExp} EXP]\``;
         },
         levelUp: (user, level, nextLevelExp) => {
-            return `Hurrayyy <@${user.id}>!! You just **leveled up** to Level **${level}**!\nYou need **${nextLevelExp}** exp to level up again.`;
+            return `Hurrayyy <@${user.id}>!! You just **leveled up** to Level **${Math.floor(level)}**!\nYou need **${nextLevelExp}** exp to level up again.`;
         }
     },
     ban: {
@@ -156,19 +203,16 @@ module.exports = {
         },
         confirmation: (guildMember) => {
             return `
-✅ | I found the user that you want to ban. Can you confirm that I found the right person?
+Confirm that this is the right member.
 
-User: <@${guildMember.id}>
-ID: ${guildMember.id}
-Tag: ${guildMember.user.tag}
+> User: **<@${guildMember.id}>**
+> ID: **${guildMember.id}**
+> Tag: **${guildMember.user.tag}**
 
-\`Please respond with yes or no.\``;
+\`Please react with ✅ if it is correct or with ❌ if not.\``;
         },
         wrongMember: () => {
             return `:x: | Got it. Try again and make sure you type their name correctly.`;
-        },
-        wrongAnswer: () => {
-            return `:x: | You should have answered with __yes__ or __no__. Please try again.`;
         },
         timesup: (guildMember) => {
             return `
@@ -195,25 +239,80 @@ Tag: ${guildMember.user.tag}
         },
         confirmation: (guildMember) => {
             return `
-✅ | I found the user that you want to kick. Can you confirm that I found the right person?
+Confirm that this is the right member.
 
-User: <@${guildMember.id}>
-ID: ${guildMember.id}
-Tag: ${guildMember.user.tag}
+> User: **<@${guildMember.id}>**
+> ID: **${guildMember.id}**
+> Tag: **${guildMember.user.tag}**
 
-\`Please respond with yes or no.\``;
+\`Please react with ✅ if it is correct or with ❌ if not.\``;
         },
         wrongMember: () => {
             return `:x: | Got it. Try again and make sure you type their name correctly.`;
-        },
-        wrongAnswer: () => {
-            return `:x: | You should have answered with __yes__ or __no__. Please try again.`;
         },
         timesup: (guildMember) => {
             return `
             :x: | Wake up! The time ran out.
             You didn't confirm that ${guildMember.user.tag} was the member you wanted to kick.
             `;
+        }
+    },
+    mute: {
+        noRolePermission: () => {
+            return `I cannot complete this request, since I lack the \`MANAGE_ROLES\` permission.`;
+        },
+        incorrectUsage: () => {
+            return `Incorrect usage. Please mention a guild member and the time you want that person to be muted. \`(eg. 10m\``;
+        },
+        muted: (user, duration) => {
+            return `**<@${user.id}>** is now muted for **${duration}**.`;
+        },
+        unmuted: (user) => {
+            return `**<@${user.id}>** is now unmuted.`;
+        },
+        notMuted: (user) => {
+            return `**<@${user.id}>** is not muted.`;
+        },
+        noMuteRole: () => {
+            return `There is no "Muted" role.`;
+        }
+    },
+    warn: {
+        warnbot: () => {
+            return `:x: | You cannot warn me.`;
+        },
+        warnedSuccessfully: (member, reason) => {
+            return `✅ | ${member.user.tag} has been warned. ${reason ? ` Reason: ${reason}` : ''}`;
+        },
+        confirmation: (guildMember) => {
+            return `
+Confirm that this is the right member.
+
+> User: **<@${guildMember.id}>**
+> ID: **${guildMember.id}**
+> Tag: **${guildMember.user.tag}**
+
+\`Please react with ✅ if it is correct or with ❌ if not.\``;
+        },
+        wrongMember: () => {
+            return `:x: | Got it. Try again and make sure you type their name correctly.`;
+        },
+        timesup: (guildMember) => {
+            return `
+            :x: | Wake up! The time ran out.
+            You didn't confirm that ${guildMember.user.tag} was the member you wanted to warn.
+            `;
+        },
+        invaludUser: () => {
+            return `Invalid member mentioned.`;
+        },
+        noWarns: () => {
+            return `User has no warnings`;
+        }
+    },
+    purge: {
+        incorrectUsage: () => {
+            return `Incorrect usage. Make sure you entered a number lower than 100.`;
         }
     },
     help: {
