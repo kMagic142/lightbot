@@ -2,6 +2,7 @@ const { MessageEmbed, Collection } = require("discord.js");
 const { readdir } = require('fs').promises;
 const path = require('path');
 const Data = require("../../data/Data");
+const utils = require('../../utils/Utils');
 
 const next = '➡️';
 const previous = '⬅️';
@@ -20,7 +21,7 @@ module.exports = {
     run: async (message) => {
         var client = message.client;
 
-        const categories = await client.getDirectories("./commands");
+        const categories = await utils.getDirectories("./commands");
 
         let page = 0;
         var msg;

@@ -1,9 +1,10 @@
 const fs = require('fs');
 var config = require("../Storage/config.json");
-let client = require("../index.js").client;
-let Data = require("./Data");
+let client = require("../app.js").client;
 
 let dataType = config.prefferedDataType.toLowerCase() || "json";
+
+var filters = require('../Storage/words.json').filters;
 
 switch(dataType) {
     case "mysql":
@@ -106,6 +107,13 @@ switch(dataType) {
             setWarnLogs: async (guildid, channel) => {
                 let statement = `UPDATE light_guilds SET warnschannel=? WHERE id=?`;
                 this.mysqlPool.execute(statement, [channel, guildid]);
+            },
+            getFilterEnabled: async (guildid) => {
+                let statement = `SELECT wordfiltering FROM light_guilds WHERE id=?`;
+                return this.mysqlPool.query(statement, [guildid]);
+            },
+            getFilters: async () => {
+                return filters;
             }
         };
         break;
@@ -135,6 +143,12 @@ switch(dataType) {
             },
             getJoinLeave: async (guildid) => {
                 let guild = await client.guildData.get(guildid);
+
+                if(!guild.joinLeave) {
+                    guild.joinLeave = {
+                        enabled: true
+                    }
+                }
 
                 return guild.joinLeave;
             },
@@ -261,6 +275,21 @@ switch(dataType) {
 
                 fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
                 client.guildData.set(guildid, guild);
+            },
+            getFilterEnabled: async (guildid) => {
+                let guild = client.guildData.get(guildid) || null;
+
+                if(!guild.enableWordFiltering) {
+                    guild.enableWordFiltering = false;
+
+                    fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
+                    client.guildData.set(guildid, guild);
+                }
+
+                return guild.enableWordFiltering;
+            },
+            getFilters: async () => {
+                return filters;
             }
         };
         break;
@@ -347,6 +376,13 @@ switch(dataType) {
             setWarnLogs: async (guildid, channel) => {
                 let statement = `UPDATE light_guilds SET warnschannel=? WHERE id=?`;
                 this.sqlitedb.prepare(statement).run(channel, guildid);
+            },
+            getFilterEnabled: async (guildid) => {
+                let statement = `SELECT wordfiltering FROM light_guilds WHERE id=?`;
+                return this.sqlitedb.prepare(statement).run(guildid);
+            },
+            getFilters: async () => {
+                return filters;
             }
         };
         break;
@@ -380,7 +416,7 @@ module.exports.setupMySQL = async () => {
         console.log(`[Light] Initialized MySQL ("${username}"@"${hostname}")`);
             
     
-        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20) PRIMARY KEY(id))`;
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20), wordFiltering BOOL PRIMARY KEY(id))`;
         let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, level REAL, coins BIGINT PRIMARY KEY(id))`;
         let warnings = `CREATE TABLE IF NOT EXISTS light_warnings(id BIGINT(20) guildid BIGINT, reason TEXT, timestamp TEXT, warnid TEXT PRIMARY KEY(id))`;
         this.mysqlPool.execute(guilds);
@@ -395,7 +431,7 @@ module.exports.setupSQLite = async () => {
 
         this.sqlitedb = new SQLite('./Storage/data.db');
 
-        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20) PRIMARY KEY(id))`;
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20), wordFiltering BOOL PRIMARY KEY(id))`;
         let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, level REAL, coins BIGINT PRIMARY KEY(id))`;
         let warnings = `CREATE TABLE IF NOT EXISTS light_warnings(id BIGINT(20) guildid BIGINT, reason TEXT, timestamp TEXT, warnid TEXT PRIMARY KEY(id))`;
         this.sqlitedb.prepare(guilds).run();

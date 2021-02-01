@@ -7,6 +7,16 @@ module.exports = {
         client.on('message', async (message) => {
             if(message.author.bot) return;
             if(!message.guild) return;
+
+            if(await Data.getFilterEnabled(message.guild.id)) {
+                let words = await Data.getFilters(message.guild.id);
+                for(const word of words) {
+                    if(message.content.includes(word)) {
+                        message.delete();
+                        break;
+                    }
+                }
+            }
             
             if(await Data.getExpEnabled(message.guild.id)) {
                 let data = client.userData.get(message.author.id);

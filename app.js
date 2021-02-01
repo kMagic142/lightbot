@@ -1,9 +1,7 @@
-
 require('dotenv').config();
 const Discord = require('discord.js');
-const { readdir } = require('fs').promises;
-const { resolve, parse } = require('path');
 const handleEvents = require('./handlers/handleEvents.js');
+const utils = require('./utils/Utils');
 
 const client = new Discord.Client({fetchAllMembers: true});
 client.config = require("./Storage/config.json");
@@ -14,10 +12,11 @@ client.commands = [];
 client.events = [];
 client.guildData = new Discord.Collection();
 client.userData = new Discord.Collection();
+client.giveaways = new Discord.Collection();
 
 
 async function registerEvents() {
-  await client.getFiles("./events")
+  await utils.getFiles("./events")
   .then(files => {
       files.forEach((f) => {
           let event = require(f);
@@ -34,25 +33,6 @@ async function registerEvents() {
       handleEvents(client, event);
   }
 }
-
-
-client.getFiles = async (dir) => {
-  const subdirs = await readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(subdirs.map((subdir) => {
-      const res = resolve(dir, subdir.name);
-      return subdir.isDirectory() ? client.getFiles(res) : res;
-  }));
-  return Array.from(new Set(files.flat()));
-};
-
-client.getDirectories = async (dir) => {
-  const subdirs = await readdir(dir, { withFileTypes: true });
-  const files = await Promise.all(subdirs.map((subdir) => {
-      const res = resolve(dir, subdir.name);
-      return subdir.isDirectory() ? client.getDirectories(res) : parse(res).dir;
-  }));
-  return Array.from(new Set(files.flat()));
-};
 
 
 if (process.version.slice(1).split('.')[0] < 14) {

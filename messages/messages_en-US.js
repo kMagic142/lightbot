@@ -315,6 +315,61 @@ Confirm that this is the right member.
             return `Incorrect usage. Make sure you entered a number lower than 100.`;
         }
     },
+    giveaway: {
+        setup: {
+            first: () => {
+                return `Setting up a new giveaway...\nPlease provide a channel you want your giveaway in.\n\`You may type cancel to cancel the setup at any time during the setup,\``;
+            },
+            second: (channel) => {
+                return `The giveaway will be happening in <#${channel.id}>. How much should the giveaway run for?\n\`Type the duration in seconds.\nYou may also type it as minutes or hours with an added m, respectively, h at the end\``;
+            },
+            third: () => {
+                return `How many winners there should be?\n\`Please enter a number of winners.\``;
+            },
+            forth: () => {
+                return `Last thing, what's the prize?\n\`Enter the giveaway prize.\``;
+            },
+            success: () => {
+                return `Your giveaway has been created!`;
+            },
+            error: () => {
+                return `An error occured. Giveaway setup was canceled.`;
+            }
+        },
+        canceled: () => {
+            return `Giveaway setup was canceled.`;
+        },
+        invalidChannel: () => {
+            return `The channel you entered is invalid. Please enter it again.`;
+        },
+        invalidTime: () => {
+            return `The time you entered is either too short or invalid. Please enter it again.`;
+        },
+        invalidWinners: () => {
+            return `I can't read the number of winners you entered. Please enter it again.`;
+        },
+        invalidPrize: () => {
+            return `The prize you entered is too long. Shorten it a bit and try again.`;
+        },
+        error: () => {
+            return `An error occured. Giveaway setup was canceled.`;
+        },
+        ended: (winners) => {
+            return `The giveaway ended! The winners are ${winners} .`;
+        },
+        noUsers: () => {
+            return `No one joined the giveaway, so no winners were selected.`;
+        },
+        endedByUser: () => {
+            return `Giveaway ended.`;
+        },
+        noGiveawayInChannel: () => {
+            return `There is no giveaway in this channel. If I'm wrong, please retype the command and add a message id to it.`;
+        },
+        invalidMessageID: () => {
+            return `The message ID you provided is invalid.`;
+        }
+    },
     help: {
         description: () => {
             return `Light is a feature-rich Discord BOT with many utilities, fun and moderation facilities, and perfect for any Discord server.

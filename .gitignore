@@ -106,7 +106,9 @@ package-lock.json
 package.json
 
 # Extras and data folders
-extras/
 Storage/guilds/
 Storage/users/
 Storage/data.db
+Storage/files/
+Storage/files/profile
+out/

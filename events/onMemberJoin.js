@@ -1,4 +1,5 @@
 const Data = require("../data/Data");
+const fs = require('fs');
 
 module.exports = {
     name: 'onMemberJoin',

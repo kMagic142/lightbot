@@ -13,7 +13,9 @@ module.exports = {
     run: async (message, args, reason) => {
         const client = message.client;
 
-        let member = message.mentions.members.first() || args[0];
+		let member = message.mentions.members.first() || args[0];
+		
+		reason = reason.substring(0, args[0].length);
 
         let yes = '✅';
 		let no = '❌';

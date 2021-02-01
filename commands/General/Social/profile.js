@@ -59,9 +59,7 @@ module.exports = {
                             image.print(font, 8, 161, `${name}`);
                             image.print(font, 160, 243, ` ${credits}`);
 
-                            if(!fs.existsSync(`./Storage/files`)) fs.mkdir(`./Storage/files`);
-
-                            let outputfile = `./Storage/files/profile-${user.id}.${image.getExtension()}`;
+                            let outputfile = `./Storage/utils/profile/profile-${user.id}.${image.getExtension()}`;
                             image.write(outputfile, function () {
                                 message.channel.send(`:frame_photo: | Profile card for **${user.tag}**`,
                                     {

@@ -15,23 +15,17 @@ module.exports = {
         let channel = message.channel;
         let client = message.client;
         var guild = await Data.getJoinLeave(message.guild.id);
-            
-        if(!guild.enabled) {
-            Data.setJoinLeave(message.guild.id, null, 1);
-            guild = await Data.getJoinLeave(message.guild.id);
-        }
 
         if(args[0]) {
             switch(args[0]) {
                 case "enable":
-                    if(guild.channel.length <= 0) {
+                    if(!guild.channel) {
                         channel.send(client.language.joinLeave.noChannelID());
-                        break;
+                        return Data.setJoinLeave(message.guild.id, null, 1);
                     }
 
                     if(guild.enabled) {
-                        channel.send(client.language.joinLeave.status(false));
-                        break;
+                        return channel.send(client.language.joinLeave.status(false));
                     }
 
                     Data.setJoinLeave(message.guild.id, null, 1);
@@ -42,8 +36,7 @@ module.exports = {
                     break;
                 case "disable":
                     if(!guild.joinLeave.enabled) {
-                        channel.send(client.language.joinLeave.status(false));
-                        break;
+                        return channel.send(client.language.joinLeave.status(false));
                     }
 
                     Data.setJoinLeave(message.guild.id, null, 0);
@@ -78,21 +71,16 @@ module.exports = {
 
         messageCollector.on('collect', async (m) => {
             var jlchannel;
+            var content = m.mentions.channels.first();
 
             try {
-                jlchannel = message.guild.channels.cache.get(m.content);
-                if(jlchannel === undefined) {
-                    throw TypeError();
-                }
+                jlchannel = message.guild.channels.cache.get(content.id);
+                if(!jlchannel) throw TypeError();
             } catch(e) {
-                if(e instanceof TypeError) {
-                    jlchannel = message.guild.channels.cache.find(c => c.name === m.content.replace("#", ""));
-                    if(jlchannel === undefined) {
-                        channel.send(client.language.joinLeave.setup.invalidChannel(m.content, m, client));
-                        return messageCollector.stop();
-                    }
-                } else {
-                    if(e) throw e;
+                jlchannel = message.guild.channels.cache.find(c => c.name === m.content || c.id === m.content);
+                if(!jlchannel) {
+                    channel.send(client.language.joinLeave.setup.invalidChannel(m.content, m, client));
+                    return messageCollector.stop();
                 }
             }
 
@@ -105,8 +93,10 @@ module.exports = {
 
         messageCollector.on('end', async (_collected, reason) => {
             if(reason === "time") {
+                Data.setJoinLeave(message.guild.id, null, 0);
                 return channel.send(client.language.joinLeave.setup.timeError());
             } else if(reason === "cancel") {
+                Data.setJoinLeave(message.guild.id, null, 0);
                 return channel.send(client.language.joinLeave.setup.canceled());
             }
         });

@@ -2,6 +2,7 @@ const fs = require('fs');
 const Data = require('../data/Data.js');
 const handleExperience = require('../handlers/handleExperience');
 const registerCommand = require("../handlers/handleCommand");
+const utils = require('../utils/Utils');
 var bot;
 
 module.exports = {
@@ -52,7 +53,7 @@ module.exports = {
 };
 
 async function registerCmds() {
-    await bot.getFiles("./commands")
+    await utils.getFiles("./commands")
     .then(files => {
         files.forEach((f) =>{
             let cmd = require(f);
@@ -94,7 +95,7 @@ async function registerUserData() {
         }
         case "json": {
             if(!fs.existsSync("./Storage/users")) fs.mkdirSync("./Storage/users");
-            await bot.getFiles("./Storage/users")
+            await utils.getFiles("./Storage/users")
             .then(files => {
                 let users = bot.users.cache;
 
@@ -155,7 +156,7 @@ async function registerGuildData() {
         }
         case "json": {
             if(!fs.existsSync("./Storage/guilds")) fs.mkdirSync("./Storage/guilds");
-            await bot.getFiles("./Storage/guilds")
+            await utils.getFiles("./Storage/guilds")
             .then(files => {
                 let guilds = bot.guilds.cache;
 
