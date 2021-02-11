@@ -5,7 +5,7 @@ module.exports = {
     description: 'Pong!',
     minArgs: 0,
     maxArgs: null,
-    permissions: [],
+    permissions: ["ADMINISTRATOR"],
     requiredRoles: [],
     run: (message) => {
         message.reply(message.client.language.ping(message.client, message.author));

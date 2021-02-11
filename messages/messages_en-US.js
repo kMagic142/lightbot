@@ -79,6 +79,51 @@ module.exports = {
             }
         }
     },
+    serverStatus: {
+        disabled: () => {
+            return `Server status isn't enabled for this guild.`;
+        },
+        status: (status) => {
+            if(status) {
+                return `Server Status is now enabled in this guild.`;
+            } else {
+                return `Server Status is now disabled in this guild.`;
+            }
+        },
+        noCategoryID: () => {
+            return `There is no category ID linked. Please proceed to run the command again without the \`enable\` at the end to begin setup.`;
+        },
+        setup: {
+            categorySetup: (client) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor(client.embedColor)
+                .addField('Setting up server status...',
+            `To set everything up, you first need to have a category id in which I can create channels.
+            Please copy your desired category's ID or name and paste it in here.
+            Make sure I have access to that category before you proceed!`)
+                .setFooter("Type cancel if you'd like to dismiss this setup.");
+                return embed;
+            },
+            invalidCategory: () => {
+                return `The category you entered is invalid, please try again.`;
+            },
+            timeError: () => {
+                return `Time expired. Please run the command again if you wish to continue.`;
+            },
+            canceled: () => {
+                return `Setup canceled. Run the command again if you wish to proceed with the setup.`;
+            },
+            success: (client) => {
+                const embed = new MessageEmbed()
+                .setAuthor(client.user.username, client.user.avatarURL())
+                .setColor(client.embedColor)
+                .addField('Server Status is successfully enabled for this guild!',
+            `Server Status has been enabled in this guild. If you wish to modify any channel names, please visit the coresponding language file or use the web dashboard.`);
+                return embed;
+            }
+        }
+    },
     warnlogs: {
         setup: {
             channelSetup: (client) => {
@@ -370,6 +415,20 @@ Confirm that this is the right member.
             return `The message ID you provided is invalid.`;
         }
     },
+    invites: {
+        invalid: () => {
+            return `This invite is invalid.`;
+        },
+        info: (uses, createdAt, author) => {
+            return `This invite has **${uses} uses.**\nIt was created by <@${author.id}> at **${createdAt}**.`;
+        },
+        rewardsDisabled: () => {
+            return `Invite rewards for this guild are disabled.`;
+        },
+        rewardUser: (uses, reward) => {
+            return `You just achieved a milestone of **${uses} invite uses!** Your award is **${reward}**.`;
+        }
+    },
     help: {
         description: () => {
             return `Light is a feature-rich Discord BOT with many utilities, fun and moderation facilities, and perfect for any Discord server.
@@ -385,7 +444,7 @@ Confirm that this is the right member.
         }
     },
     LightStartup: () => {
-        // ascii art with ansi colors
+        // ascii art with ansi colors for light's startup. you can change it if you really want to.
         return `[107;40m[38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m 
             [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;234m.[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m 
             [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;234m.[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;173m#[38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m [38;5;016m 

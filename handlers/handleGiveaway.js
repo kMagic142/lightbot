@@ -82,6 +82,4 @@ module.exports = async (channel, time, winners, prize, creator, client) => {
         timeout: timeout
     });
 
-    //TODO: https://github.com/AnIdiotsGuide/guidebot-class/tree/master/commands
-
 };

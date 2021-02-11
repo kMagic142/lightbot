@@ -70,26 +70,31 @@ async function getFiles (dir) {
 
 
 async function getHelp(categories, page, client, message) {
+    const embed = new MessageEmbed();
     for(const category of categories) {
         if(path.parse(category).name === "Admin" && message.author.id !== client.owner) continue;
-        string = "";
+        let fields = [];
         await getFiles(category)
-        .then(async cmds => {
+        .then(async cmds => { // jshint ignore:line
             for(const c of cmds) {
                 if(!c) continue;
                 const command = require(c);
 
+                if(!command.enabled) continue;
+
                 let prefix = await Data.getPrefix(message.guild.id);
 
-                const aliases = (command.aliases instanceof Array) ? (command.aliases.filter(cmd => cmd !== command.name)).join(", ") : command.aliases || null;
-                string += `${prefix}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}${aliases ? `\nAliases: ${aliases}` : ""}\n${command.description}\n\n`;
+                const aliases = (command.aliases instanceof Array) ? (command.aliases.filter(cmd => cmd !== command.name)).join(", ") : command.aliases;
+                fields.push({
+                    name: `▫️ ${prefix}${command.name} ${command.expectedArgs ? command.expectedArgs : ""}`, 
+                    value: `${command.description}\n${aliases ? `Aliases: ${aliases}` : ""}`
+                });
             }
         });
 
-        pageData.set(path.parse(category).name, string);
+        pageData.set(path.parse(category).name, fields);
     }
 
-    const embed = new MessageEmbed();
     embed.setColor(client.embedColor);
     embed.setAuthor(client.user.username, client.user.avatarURL());
     embed.setThumbnail(client.user.avatarURL());
@@ -97,7 +102,11 @@ async function getHelp(categories, page, client, message) {
     if(page <= 0) {
         embed.setDescription(client.language.help.description());
     } else {
-        embed.addField(pageData.keyArray()[page], pageData.array()[page]);
+        embed.setTitle(pageData.keyArray()[page]);
+
+        for (let field of pageData.array()[page]) {
+            embed.addField(field.name, field.value);
+        }
     }
 
     return embed;

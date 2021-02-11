@@ -28,14 +28,11 @@ module.exports.parseTime = async (time) => {
 
     switch(time.charAt(time.length - 1)) {
         case 'd':
-            multiplier *= 24;
-            break;
+            multiplier *= 24; // jshint ignore:line
         case 'h':
-            multiplier *= 60;
-            break;
+            multiplier *= 60; // jshint ignore:line
         case 'm':
-            multiplier *= 60;
-            break;
+            multiplier *= 60; // jshint ignore:line
         case 's':
             time = time.substring(0, time.length - 1);
     }

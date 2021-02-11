@@ -44,9 +44,19 @@ module.exports = {
             // activity
             client.user.setActivity(`Light BOT - ${prefix}help`, { type: 'WATCHING' });
 
+            // handle pusing experience data to database
             setInterval(async () => {
                 handleExperience(client);
             }, 120000);
+
+            // cache all user invites in guilds
+            setTimeout(() => {
+                client.guilds.cache.each(async g => {
+                    let invites = await g.fetchInvites();
+                    client.guildInvites.set(g.id, invites);
+                });
+                console.log(`[Light] Cached all avaiable guild invites successfully.\n!!! WARNING !!! This feature is highly not recommended for more than 10-20 guilds.\nPlease refrain to use this feature if you pass that number.`);
+            }, 10000);
         
         });
     }
@@ -81,7 +91,7 @@ async function registerUserData() {
             for(var user of users) {
                 let statement = `SELECT count(1) FROM light_users WHERE id=?`;
                 connection.query(statement, [user[0]])
-                .then(([rows, _fields]) => {
+                .then(([rows, _fields]) => { // jshint ignore:line
                     if(rows[0]['count(1)'] < 1) {
                         let statement = `INSERT INTO light_guilds(id, experience) VALUES (?,?)`;
                         connection.execute(statement, [user[0], 0])
@@ -89,7 +99,7 @@ async function registerUserData() {
                         bot.userData.set(user[0], { experience: 0, level: 0 });
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err)); // jshint ignore:line
             }
             break;
         }
@@ -143,14 +153,14 @@ async function registerGuildData() {
             for(var guild of guilds) {
                 let statement = `SELECT count(1) FROM light_guilds WHERE id=?`;
                 connection.query(statement, [guild[0]])
-                .then(([rows, _fields]) => {
+                .then(([rows, _fields]) => { // jshint ignore:line
                     if(rows[0]['count(1)'] < 1) {
                         let statement = `INSERT INTO light_guilds(id, prefix) VALUES (?,?)`;
                         connection.execute(statement, [guild[0], bot.config.prefix])
                         .catch(err => console.error(err));
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error(err)); // jshint ignore:line
             }
             break;
         }

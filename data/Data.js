@@ -51,6 +51,20 @@ switch(dataType) {
                 this.mysqlPool.execute(statement, [enabled, channel, guildid])
                 .catch(err => console.error(err));
             },
+            getServerStatus: async (guildid) => {
+                let statement = `SELECT svstenabled, svstcategory FROM light_guilds WHERE id=?`;
+                let [rows] = await this.mysqlPool.execute(statement, [guildid]);
+
+                return {
+                    enabled: rows[0].svstenabled,
+                    category: rows[0].svstcategory
+                };
+            },
+            setServerStatus: async (guildid, category, enabled) => {
+                let statement = `UPDATE light_guilds SET svstenabled=?, svstcategory=? WHERE id=?`;
+                this.mysqlPool.execute(statement, [enabled, category, guildid])
+                .catch(err => console.error(err));
+            },
             getTickets: async (guildid) => {
                 let statement = `SELECT ticketenabled, ticketcategory, ticketam FROM light_guilds WHERE id=?`;
                 let [rows] = this.mysqlPool.query(statement, [guildid]);
@@ -114,6 +128,12 @@ switch(dataType) {
             },
             getFilters: async () => {
                 return filters;
+            },
+            getInviteRewards: async () => {
+                throw TypeError("Invite rewards are not supported on SQLite or MySQL yet.");
+            },
+            setServerStatusChannels: async () => {
+                throw TypeError("Changing Server Status channels is not available right now for users using MySQL. Feature will be supported in a future version.");
             }
         };
         break;
@@ -147,7 +167,7 @@ switch(dataType) {
                 if(!guild.joinLeave) {
                     guild.joinLeave = {
                         enabled: true
-                    }
+                    };
                 }
 
                 return guild.joinLeave;
@@ -162,6 +182,48 @@ switch(dataType) {
 
                 fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
                 client.guildData.set(guildid, guild);
+            },
+            getServerStatus: async (guildid) => {
+                let guild = await client.guildData.get(guildid);
+
+                if(!guild.serverStatus) {
+                    guild.joinLeave = {
+                        enabled: true
+                    };
+                }
+
+                return guild.serverStatus;
+            },
+            setServerStatus: async (guildid, category, enabled) => {
+                let guild = client.guildData.get(guildid);
+
+                guild.serverStatus = {
+                    enabled: enabled,
+                    category: category
+                };
+
+                fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
+                client.guildData.set(guildid, guild);
+            },
+            setServerStatusChannels: async (humans, bots, total) => {
+                let config = [
+                    {
+                        type: "humans",
+                        id: humans
+                    },
+                    {
+                        type: "bots",
+                        id: bots
+                    },
+                    {
+                        type: "total",
+                        id: total
+                    }
+                ];
+
+                client.config.serverStatus.channels = config;
+
+                fs.writeFileSync(`./config.json`, JSON.stringify(client.config, null, 2));
             },
             getTickets: function (guildid) {
                 let guild = client.guildData.get(guildid) || null;
@@ -290,6 +352,24 @@ switch(dataType) {
             },
             getFilters: async () => {
                 return filters;
+            },
+            getInviteRewards: (guildid) => {
+                let guild = client.guildData.get(guildid) || null;
+
+                if(!guild.inviteRewards) 
+                {
+                    guild.inviteRewards = 
+                    {
+                        enabled: 0,
+                        rewards: []
+                    };
+
+                    fs.writeFileSync(`./Storage/guilds/${guildid}.json`, JSON.stringify(guild, null, 2));
+                    client.guildData.set(guildid, guild);
+                }
+
+                return guild.inviteRewards;
+
             }
         };
         break;
@@ -329,6 +409,19 @@ switch(dataType) {
             setJoinLeave: async (guildid, channel, enabled) => {
                 let statement = `UPDATE light_guilds SET jlenabled=?, jlchannel=? WHERE id=?`;
                 this.sqlitedb.prepare(statement).run(enabled, channel, guildid);
+            },
+            getServerStatus: async (guildid) => {
+                let statement = `SELECT svstenabled, svstcategory FROM light_guilds WHERE id=?`;
+                let result = this.sqlitedb.prepare(statement).get(guildid);
+
+                return {
+                    enabled: result.svstenabled,
+                    category: result.svstcategory
+                };
+            },
+            setServerStatus: async (guildid, category, enabled) => {
+                let statement = `UPDATE light_guilds SET svstenabled=?, svstcategory=? WHERE id=?`;
+                this.sqlitedb.prepare(statement).run(enabled, category, guildid);
             },
             getTickets: async (guildid) => {
                 let statement = `SELECT ticketenabled, ticketcategory, ticketam FROM light_guilds WHERE id=?`;
@@ -383,6 +476,12 @@ switch(dataType) {
             },
             getFilters: async () => {
                 return filters;
+            },
+            getInviteRewards: async () => {
+                throw TypeError("Invite rewards are not supported on SQLite or MySQL yet.");
+            },
+            setServerStatusChannels: async () => {
+                throw TypeError("Changing Server Status channels is not available right now for users using SQLite. Feature will be supported in a future version.");
             }
         };
         break;
@@ -416,7 +515,7 @@ module.exports.setupMySQL = async () => {
         console.log(`[Light] Initialized MySQL ("${username}"@"${hostname}")`);
             
     
-        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20), wordFiltering BOOL PRIMARY KEY(id))`;
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20), wordFiltering BOOL, svstenabled BOOL, svstcategory BIGINT(20) PRIMARY KEY(id))`;
         let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, level REAL, coins BIGINT PRIMARY KEY(id))`;
         let warnings = `CREATE TABLE IF NOT EXISTS light_warnings(id BIGINT(20) guildid BIGINT, reason TEXT, timestamp TEXT, warnid TEXT PRIMARY KEY(id))`;
         this.mysqlPool.execute(guilds);
@@ -431,7 +530,7 @@ module.exports.setupSQLite = async () => {
 
         this.sqlitedb = new SQLite('./Storage/data.db');
 
-        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20), wordFiltering BOOL PRIMARY KEY(id))`;
+        let guilds = `CREATE TABLE IF NOT EXISTS light_guilds(id BIGINT(20) UNIQUE, prefix VARCHAR(8), jlenabled BOOL, jlchannel BIGINT(20), ticketenabled BOOL, ticketcategory BIGINT(20), ticketam BOOL, enableexp BOOL, warnschannel BIGINT(20), wordFiltering BOOL, svstenabled BOOL, svstcategory BIGINT(20) PRIMARY KEY(id))`;
         let users = `CREATE TABLE IF NOT EXISTS light_users(id BIGINT(20) experience BIGINT, level REAL, coins BIGINT PRIMARY KEY(id))`;
         let warnings = `CREATE TABLE IF NOT EXISTS light_warnings(id BIGINT(20) guildid BIGINT, reason TEXT, timestamp TEXT, warnid TEXT PRIMARY KEY(id))`;
         this.sqlitedb.prepare(guilds).run();

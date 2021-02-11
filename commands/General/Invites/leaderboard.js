@@ -1,4 +1,6 @@
 const { Collection, MessageEmbed } = require("discord.js");
+const moment = require('moment');
+moment.suppressDeprecationWarnings = true;
 
 const rankEmojis = ['🥇', '🥈', '🥉'];
 const pageSize = 10;
@@ -7,9 +9,9 @@ const next = '➡️';
 
 module.exports = {
     enabled: true,
-    name: 'social exp leaderboard',
-    aliases: ['xp leaderboard'],
-    description: 'Display this server\'s top members in gathered exp.',
+    name: 'invite leaderboard',
+    aliases: ['inv leaderboard'],
+    description: 'Displays leaderboard for this  guild\'s invites',
     minArgs: 0,
     maxArgs: null,
     permissions: [],
@@ -17,15 +19,23 @@ module.exports = {
     run: async (message) => {
         let client = message.client;
         let users = new Collection();
+        let invites = await message.guild.fetchInvites();
 
-        for(let user of message.guild.members.cache) {
-            user = user[1].user;
-            if(user.bot) continue;
-            let exp = client.userData.get(user.id);
-            users.set(user.id, exp);
+
+        if(invites < 1) {
+            return message.channel.send(client.language.invites.noInvites());
         }
 
-        users = users.sort((userA, userB) => userA.experience > userB.experience ? -1 : 1);
+
+        for(let invite of invites) {
+            invite = invite[1];
+
+            if(invite.inviter.bot) continue;
+            users.set(invite.inviter.id, +invite.uses);
+        }
+
+
+        users = users.sort((userA, userB) => userA > userB ? -1 : 1);
 
         var userRank;
 
@@ -33,22 +43,21 @@ module.exports = {
             let description = '';
             for(let i = page; i < users.array().length && i < (page + pageSize); i++) {
                 let userid = users.keyArray()[i];
-                let exp = client.userData.get(userid).experience;
+                let uses = users.get(userid);
 
                 let rank = i + 1;
                 if(userid === message.author.id) userRank = rank;
                 rank = (rank < 4) ? `${rankEmojis[rank - 1]}` : `**\`#${String(rank).padEnd(3)}\`**`;
 
 
-                description += `${rank}<@${userid}> - \`${exp} experience \`\n`;
+                description += `${rank}<@${userid}> - \`${uses} invite uses\`\n`;
             }
             return description;
         }
 
-
         const embed = new MessageEmbed()
         .setColor(client.embedColor)
-        .setAuthor("EXP Leaderboard in this guild", message.guild.iconURL())
+        .setAuthor("Invite Leaderboard for this guild", message.guild.iconURL())
         .setThumbnail(message.guild.iconURL())
         .setDescription(getDescription())
         .setFooter(`${userRank ? `Your rank is #${userRank}` : `You have no rank`}`, message.author.avatarURL());

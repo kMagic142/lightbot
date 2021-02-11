@@ -13,6 +13,7 @@ client.events = [];
 client.guildData = new Discord.Collection();
 client.userData = new Discord.Collection();
 client.giveaways = new Discord.Collection();
+client.guildInvites = new Discord.Collection();
 
 
 async function registerEvents() {

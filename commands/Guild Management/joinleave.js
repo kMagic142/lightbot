@@ -1,4 +1,3 @@
-const fs = require('fs');
 const Data = require('../../data/Data.js');
 
 module.exports = {
