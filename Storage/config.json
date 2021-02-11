@@ -1,8 +1,36 @@
 {
   "token": "empty-as-my-soul",
-  "prefix": "h!",
-  "version": "2.4",
+  "prefix": "light ",
   "logging": true,
-  "color": "BLUE",
-  "lang": "en-US"
+  "embedColor": "BLUE",
+  "lang": "en-US",
+  "owner": "0",
+  "deleteUserDataIfLeavesGuild": false,
+  "prefferedDataType": "json",
+  "mysql": {
+    "hostname": "localhost",
+    "port": "3306",
+    "database": "light",
+    "username": "light",
+    "password": "light",
+    "maximumConnections": 10,
+    "connectionTimeout": 5000
+  },
+  "rcon": {
+    "host": "localhost",
+    "port": "25577",
+    "password": "light"
+  },
+  "serverStatus": {
+    "channels": [
+      {
+        "type" : "humans",
+        "id": null
+      },
+      {
+        "type": "bots",
+        "id": null
+      }
+    ]
+  }
 }

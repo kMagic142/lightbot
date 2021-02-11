@@ -1,13 +1,13 @@
-const Discord = require('discord.js');
-
-module.exports.run = async (client, message, _args) => {
-
-  let pingMessage = client.language["ping"].ping;
-  const ping = pingMessage.replace("${ping}", Math.round(client.ws.ping));
-
-  message.channel.send(`${ping}`);
+module.exports = {
+    enabled: true,
+    name: 'ping',
+    aliases: ['pong', 'pingpong'],
+    description: 'Pong!',
+    minArgs: 0,
+    maxArgs: null,
+    permissions: [],
+    requiredRoles: [],
+    run: (message, args, text) => {
+        message.reply(message.client.language.ping(message.client, message.author));
+    }
 };
-
-module.exports.help = {
-  name: 'ping'
-}

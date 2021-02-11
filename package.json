@@ -1,0 +1,29 @@
+{
+  "name": "lightbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kMagic142/lightbot.git"
+  },
+  "author": "Light Development // kMagic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kMagic142/lightbot/issues"
+  },
+  "homepage": "https://github.com/kMagic142/lightbot#readme",
+  "dependencies": {
+    "better-sqlite3": "^7.1.2",
+    "discord.js": "github:discordjs/discord.js",
+    "dotenv": "^8.2.0",
+    "jimp": "^0.16.1",
+    "moment": "^2.29.1",
+    "ms": "^2.1.3",
+    "mysql2": "^2.2.5",
+    "string-similarity": "^4.0.4"
+  }
+}
